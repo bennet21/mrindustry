@@ -20,5 +20,5 @@ convertRASMI <- function(x) {
     x_out[countries_in_region,,] <- x[region,,]
   }
 
-  return(x)
+  return(x_out)
 }

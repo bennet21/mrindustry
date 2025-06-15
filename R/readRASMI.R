@@ -7,7 +7,7 @@
 #' Data available on Zenodo: https://zenodo.org/records/10124952
 #' Data available on Github: https://github.com/TomerFishman/MaterialIntensityEstimator
 #'
-#' @param subtype Material. Possible values are "concrete", "steel", "plastics".
+#' @param subtype Material subtype. Possible values are "concrete", "steel", "plastics".
 #' @author Bennet Weiss.
 readRASMI <- function(subtype = "concrete") {
   path <- file.path("v20230905", "MI_ranges_20230905.xlsx")
