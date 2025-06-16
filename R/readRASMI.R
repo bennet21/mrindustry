@@ -13,7 +13,8 @@ readRASMI <- function(subtype = "concrete") {
   path <- file.path("v20230905", "MI_ranges_20230905.xlsx")
   df <- readxl::read_xlsx(path, sheet = subtype)
   data <- select(df, "R5_32", "function", "structure", "p_50")
-  data <- setNames(data, c("region", "function", "structure", "value"))
+  data <- setNames(data, c("region", "Function", "Structure", "value"))
+  data$Function[data$Function == "NR"] <- "Com"
   x <- magclass::as.magpie(data, spatial = 1)
   return(x)
 }
