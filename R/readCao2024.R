@@ -13,7 +13,7 @@ readCao2024 <- function(subtype) {
   data <- data[-1, , drop = FALSE] # remove row 2
   normalize = FALSE
 
-  if (subtype == "cement_share") {
+  if (subtype == "cement_use_share") {
     long_names <- c(
       "cement for concrete (distribution function)",
       "cement for mortar (distribution)"
