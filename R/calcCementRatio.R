@@ -1,8 +1,8 @@
-#' Calculate end use product share of cement.
+#' Calculate strength class distribution of concrete.
 #'
 #' @author Bennet Weiss
-calcCementUseShare <- function(){
-  x <- readSource("Cao2024", subtype = "cement_use_share")
+calcCementRatio <- function(subtype){
+  x <- readSource("Cao2024", subtype = "cement_content")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -10,7 +10,7 @@ calcCementUseShare <- function(){
 
   unit <- "ratio"
   description <- paste(
-    "Share of cement that is used for the end-use categories concrete and mortar.",
+    "Concrete cement content.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)
