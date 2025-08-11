@@ -11,84 +11,100 @@ readCao2024 <- function(subtype) {
   data <- suppressMessages(readxl::read_xlsx(path, sheet = "Uptake"))
   data <- head(data, 11) # remove rows after row 11
   data <- data[-1, , drop = FALSE] # remove row 2
-  normalize <- FALSE
-  labels <- NULL
-  key <- NULL
-  fraction_mean <- FALSE
 
-  if (subtype == "cement_use_share") {
+  # parameters for data gathering
+  normalize <- FALSE
+  dim_members <- NULL
+  dim <- NULL
+  fraction_mean <- FALSE
+  groups <- NULL
+
+  if (subtype == "product_material_split") {
     long_names <- c(
       "cement for concrete (distribution function)",
       "cement for mortar (distribution)"
     )
-    labels <- c("concrete", "mortar")
-    key <- "end_use_product"
+    dim_members <- c("concrete", "mortar")
+    dim <- "Product Material"
     normalize = TRUE
-  } else if (subtype == "concrete_strength_class_split") {
+  } else if (subtype == "product_application_split") {
     long_names <- c(
       "distribution of concrete by strength class ≤C15 (distribution)",
       "distribution of concrete by strength class C16-C23 (distribution)",
       "distribution of concrete by strength class C23-C35 (distribution)",
-      "distribution of concrete by strength class >C35 (distribution)"
+      "distribution of concrete by strength class >C35 (distribution)",#
+      # Warning: this only works as long as mortar cement content is the same across all applications
+      # Split has different units for concrete and mortar:
+      # for concrete based on concrete, for mortar based on cement
+      # TODO find a way to fix this. Maybe check where the data actually comes from?
+      # Update: They are not so clear on this, but it seems that it should be per mortar, not per cement.
+      "percentage of mortar cement used for rendering, palstering and decorating (distribution)",
+      "percentage of mortar cement used for masonry (distribution)",
+      "percentage of mortar cement used for maintenance and repairing (distribution)"
     )
-    labels <- c("C15","C20","C30","C35")
-    key <- "concrete_strength_class"
+    dim_members <- c("C15", "C20", "C30", "C35", "finishing", "masonry", "maintenance")
+    dim <- "Product Application"
     normalize = TRUE
+    groups <- c(rep("concrete",4), rep("mortar",3))
   } else if (subtype == "carbonation_rate") {
     long_names <- c(
       "compressive strength class and exposure conditions (βc sec) ≤C15 (distribution)",
       "compressive strength class and exposure conditions (βc sec) C16-C23 (distribution)",
       "compressive strength class and exposure conditions (βc sec) C23-C35 (distribution)",
-      "compressive strength class and exposure conditions (βc sec) >C35 (distribution)"
+      "compressive strength class and exposure conditions (βc sec) >C35 (distribution)",
+      # TODO replace this hack to fill over mortar dim_members
+      "carbonation rate coefficient of cement mortar (km) (distribution)",
+      "carbonation rate coefficient of cement mortar (km) (distribution)",
+      "carbonation rate coefficient of cement mortar (km) (distribution)"
     )
-    labels <- c("C15","C20","C30","C35")
-    key <- "concrete_strength_class"
+    dim_members <- c("C15", "C20", "C30", "C35", "finishing", "masonry", "maintenance")
+    dim <- "Product Application"
   } else if (subtype == "carbonation_rate_factor_additives") {
     long_names <- c("cement additives (βad) (distribution)")
   } else if (subtype == "carbonation_rate_factor_co2") {
     long_names <- c("CO2 concentration (βCO2) (distribution)")
   } else if (subtype == "carbonation_rate_factor_coating") {
     long_names <- c("coating and cover (βCC) (distribution)")
-  } else if (subtype == "concrete_thickness") {
-    long_names <- c("wall thickness (distribution)")
-    fraction_mean <- TRUE
-  } else if (subtype == "cement_content") {
+  } else if (subtype == "product_thickness") {
     long_names <- c(
-      "cement content of concrete in different strength classes (kg cement/m3) (Ci) ≤C15 (distribution)",
-      "cement content of concrete in different strength classes (kg cement/m3) (Ci) C16-C23 (distribution)",
-      "cement content of concrete in different strength classes (kg cement/m3) (Ci) C23-C35 (distribution)",
-      "cement content of concrete in different strength classes (kg cement/m3) (Ci) >C35 (distribution)"
-    )
-    labels <- c("C15","C20","C30","C35")
-    key <- "concrete_strength_class"
-  } else if (subtype == "mortar_use_split") {
-    long_names <- c(
-      "percentage of mortar cement used for rendering, palstering and decorating (distribution)",
-      "percentage of mortar cement used for masonry (distribution)",
-      "percentage of mortar cement used for maintenance and repairing (distribution)"
-    )
-    labels <- c("finishing", "masonry", "M&R")
-    key <- "mortar_use_type"
-  } else if (subtype == "mortar_thickness") {
-    long_names <- c(
+      # TODO replace this hack to fill over concrete dim_members
+      "wall thickness (distribution)",
+      "wall thickness (distribution)",
+      "wall thickness (distribution)",
+      "wall thickness (distribution)",
       "thickness of mortar cement used for rendering, palstering and decorating (distribution)",
       "thickness of mortar cement used for masonry (distribution)",
       "thickness of mortar cement used for maintenance and repairing (distribution)"
     )
-    labels <- c("finishing", "masonry", "M&R")
-    key <- "mortar_use_type"
+    dim_members <- c("C15", "C20", "C30", "C35", "finishing", "masonry", "maintenance")
+    dim <- "Product Application"
+    fraction_mean <- TRUE
+  } else if (subtype == "product_cement_content") {
+    long_names <- c(
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) ≤C15 (distribution)",
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) C16-C23 (distribution)",
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) C23-C35 (distribution)",
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) >C35 (distribution)",
+      # TODO replace this hack: Cement content of mortar assumed to be the same as C15
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) ≤C15 (distribution)",
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) ≤C15 (distribution)",
+      "cement content of concrete in different strength classes (kg cement/m3) (Ci) ≤C15 (distribution)"
+    )
+    dim_members <- c("C15", "C20", "C30", "C35", "finishing", "masonry", "maintenance")
+    dim <- "Product Application"
+  } else if (subtype == "cao_carbonation_share") {
+    long_names <- c(
+      "proportion of CaO within fully carbonated cement that converts to CaCO3 for concrete cement (γ) (distribution)",
+      "proportion of CaO within fully carbonated cement that converts to CaCO3 for mortar cement (γ1) (distribution)"
+    )
+    dim_members <- c("concrete", "mortar")
+    dim <- "Product Material"
+  # ------------- From here on not used ----------------------------------------------
   } else if (subtype == "cement_loss_construction") {
     long_names <- c("cement wasted during construction (distribution)")
   } else if (subtype == "clinker_loss_production") {
     long_names <- c("CKD generation rate of clinker (distribution)")
-  } else if (subtype == "cao_carbonation_ratio") {
-    long_names <- c(
-      "proportion of CaO within fully carbonated cement that converts to CaCO3 for concrete cement (γ) (distribution)",
-      "proportion of CaO within fully carbonated cement that converts to CaCO3 for mortar cement (γ1) (distribution)"
-
-    )
-    labels <- c("concrete", "mortar")
-    key <- "end_use_product"
+  
   } else {
     long_names <- c(
       "CKD generation rate of clinker (distribution)"
@@ -166,8 +182,10 @@ readCao2024 <- function(subtype) {
 
   }
 
-  x <- calculate_means(data, long_names, labels, key, normalize = normalize, fmean = TRUE)
+  x <- calculate_means(data, long_names, dim_members, dim, normalize = normalize,
+                      fmean = fraction_mean, groups = groups)
   x <- as.magpie(x, spatial = 1)
+  return(x)
 }
 
 #' Calculate the data mean, do normalization check and reshape the data.
@@ -175,40 +193,54 @@ readCao2024 <- function(subtype) {
 #' @author Bennet Weiss
 #' @param data original input from dataframe.
 #' @param long_names long label of the first column of a variable.
-#' @param labels names of the different categories of a key (dimension).
-#' @param key name of the dimension.
+#' @param dim_members names of the different elements of a dimension.
+#' @param dim name of the dimension.
 #' @param normalize Bool if normalization step should be performed
 #' @param tol Tolerance for check of normalization within rounding errors. Only performed if normalize = TRUE.
-calculate_means <- function(data, long_names, labels = NULL, key = NULL, normalize = FALSE, tol = 3e-2, fmean=FALSE) {
-  if (!is.null(labels) && length(labels) != length(long_names)) {
-    stop("labels must have the same length as long_names")
-  }
+#' @param groups optional vector (same length as long_names) giving group IDs
+calculate_means <- function(data, long_names, dim_members = NULL, dim = NULL,
+                            normalize = FALSE, tol = 3e-2, fmean = FALSE, groups = NULL) {
+  if (!is.null(dim_members) && length(dim_members) != length(long_names))
+    stop("dim_members must have the same length as long_names")
+  if (!is.null(groups) && length(groups) != length(long_names))
+    stop("groups must have same length as long_names")
 
   # Collect means (assumes calculate_mean(data, name) returns a numeric vector)
   cols <- lapply(long_names, function(nm) as.numeric(calculate_mean(data, nm, fmean = fmean)))
   X <- as.data.frame(cols, check.names = FALSE)
-  names(X) <- c(labels)
+  names(X) <- dim_members
 
   # Normalize rows (exclude region)
   if (normalize) {
-    rs <- rowSums(X) # calculate sum for each row
-    X <- sweep(X, 1, rs, "/") # divide each value by the row sum
+    if (is.null(groups)) {
+      rs <- rowSums(X) # calculate sum for each row
+      X <- sweep(X, 1, rs, "/") # divide each value by the row sum
 
-    err <- abs(rowSums(X) - 1)
-    if (any(err > tol, na.rm = TRUE)) warning("Some rows deviate from 1 by more than tol.")
+      err <- abs(rowSums(X) - 1)
+      if (any(err > tol, na.rm = TRUE)) warning("Some rows deviate from 1 by more than tol.")
+    } else {
+      for (g in unique(groups)) {
+        idx <- which(groups == g)
+        rs <- rowSums(X[, idx, drop=FALSE])
+        X[, idx] <- sweep(X[, idx, drop=FALSE], 1, rs, "/")
+        err <- abs(rowSums(X[, idx, drop=FALSE]) - 1)
+        if (any(err > tol, na.rm = TRUE))
+          warning(sprintf("Group '%s' some rows deviate from 1 by more than tol.", g))
+      }
+    }  
   }
 
   # add region as first column
   X <- cbind(Region = data[[1]], X)
 
   # Wide -> long
-  if (!is.null(labels)) {
+  if (!is.null(dim_members)) {
     out <- reshape(X,
-                   varying = labels, v.names = "value",
-                   timevar = key, times = labels,
+                   varying = dim_members, v.names = "value",
+                   timevar = dim, times = dim_members,
                    idvar = "Region", direction = "long")
     rownames(out) <- NULL
-    out <- out[, c("Region", key, "value")]
+    out <- out[, c("Region", dim, "value")]
   } else out <- X
 
   return(out)
@@ -224,7 +256,8 @@ calculate_mean <- function(data, start_column_name, fmean = FALSE) {
   if (!fmean){
     mean_functions <- list(
       "Weibull" = mean_trunc_weibull,
-      "Uniform" = mean_uniform
+      "Uniform" = mean_uniform,
+      "Triangular" = mean_triangular
     )
   } else {
     mean_functions <- list(
@@ -235,7 +268,8 @@ calculate_mean <- function(data, start_column_name, fmean = FALSE) {
 
   distribution_parameter_number <- c(
     "Weibull" = 4,
-    "Uniform" = 2
+    "Uniform" = 2,
+    "Triangular" = 3
   )
 
   start_idx <- which(names(data) == start_column_name)
@@ -303,10 +337,27 @@ mean_uniform <- function(parameters) {
   return((a + b) / 2)
 }
 
+mean_triangular <- function(parameters) {
+  parameters <- as.data.frame(parameters, optional = TRUE)
+  if (!is.data.frame(parameters) || ncol(parameters) != 3L)
+    stop("parameters must be a data.frame/matrix (3 columns: mode,max,min) or a length-3 vector/list.")
+  mode <- as.numeric(parameters[[1]])
+  b    <- as.numeric(parameters[[2]])  # max
+  a    <- as.numeric(parameters[[3]])  # min
+
+  bad <- !is.finite(a) | !is.finite(b) | !is.finite(mode) |
+         !(b > a) | !(mode > a & mode < b)
+  if (any(bad))
+    stop(sprintf("Invalid triangular parameter rows (need a < mode < b): %s",
+                 paste(which(bad), collapse = ", ")))
+
+  (a + b + mode) / 3
+}
+
 #' Conditional harmonic mean (1 / E[1/X]) for truncated Weibull on [a,b].
 #' Parameters: (scale, shape, min, max). Requires (shape>1 or a>0). Diverges if a=0 & shape<=1.
 #' Returns 1 / E[1/X | a≤X≤b].
-mean_trunc_weibull <- function(parameters) {
+fmean_trunc_weibull <- function(parameters) {
   parameters <- as.data.frame(parameters, optional = TRUE)
   if (!is.data.frame(parameters) || ncol(parameters) != 4L)
     stop("parameters must be a data.frame/matrix (4 columns) or a length-4 vector/list.")

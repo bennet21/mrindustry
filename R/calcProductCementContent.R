@@ -1,8 +1,8 @@
 #' Calculate strength class distribution of concrete.
 #'
 #' @author Bennet Weiss
-calcConcreteStrengthClassSplit <- function(){
-  x <- readSource("Cao2024", subtype = "concrete_strength_class_split")
+calcProductCementContent <- function(){
+  x <- readSource("Cao2024", subtype = "product_cement_content")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -10,7 +10,7 @@ calcConcreteStrengthClassSplit <- function(){
 
   unit <- "ratio"
   description <- paste(
-    "Share of concrete used for different strength classes.",
+    "Product cement content.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)

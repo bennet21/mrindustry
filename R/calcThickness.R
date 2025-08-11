@@ -1,8 +1,8 @@
 #' Calculate strength class distribution of concrete.
 #'
 #' @author Bennet Weiss
-calcThickness <- function(subtype){
-  x <- readSource("Cao2024", subtype = "concrete_thickness")
+calcProductThickness <- function(){
+  x <- readSource("Cao2024", subtype = "product_thickness")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -10,7 +10,7 @@ calcThickness <- function(subtype){
 
   unit <- "mm"
   description <- paste(
-    "Thickness of concrete walls.",
+    "Thickness of product application.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)
