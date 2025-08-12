@@ -11,12 +11,17 @@ calcCarbonationRate <- function(subtype = "base"){
   )
 
   x <- readSource("Cao2024", subtype = full_name[[subtype]])
+  unit <- "factor"
+
+  if (subtype == "base") {
+    x <- x * 1e-6 # convert from mm/sqrt(yr) to m/sqrt(yr)
+    unit <- "m/sqrt(a)"
+  }
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
   weight <- toolCountryFill(weight, fill = 1, verbosity = 2)
 
-  unit <- "mm/sqrt(a)"
   description <- paste(
     "Carbonation rate ", subtype, " of concrete of different strength classes.",
     "Data from Cao2024."

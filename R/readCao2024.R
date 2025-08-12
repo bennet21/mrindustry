@@ -99,11 +99,11 @@ readCao2024 <- function(subtype) {
     )
     dim_members <- c("concrete", "mortar")
     dim <- "Product Material"
-  # ------------- From here on not used ----------------------------------------------
   } else if (subtype == "cement_loss_construction") {
     long_names <- c("cement wasted during construction (distribution)")
   } else if (subtype == "clinker_loss_production") {
     long_names <- c("CKD generation rate of clinker (distribution)")
+  # ------------- From here on not used ----------------------------------------------
   
   } else {
     long_names <- c(
@@ -166,10 +166,6 @@ readCao2024 <- function(subtype) {
       "carbonation rate coefficient of buried concrete in strength class i (kli) C16-C23",
       "carbonation rate coefficient of buried concrete in strength class i (kli) C23-C35",
       "carbonation rate coefficient of buried concrete in strength class i (kli) >C35"
-    )
-
-    long_names <- c(
-      "CKD generation rate of clinker (distribution)"
     )
 
     long_names <- c(
