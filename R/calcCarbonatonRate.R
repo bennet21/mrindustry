@@ -14,7 +14,7 @@ calcCarbonationRate <- function(subtype = "base"){
   unit <- "factor"
 
   if (subtype == "base") {
-    x <- x * 1e-6 # convert from mm/sqrt(yr) to m/sqrt(yr)
+    x <- x * 1e-3 # convert from mm/sqrt(yr) to m/sqrt(yr)
     unit <- "m/sqrt(a)"
   }
 

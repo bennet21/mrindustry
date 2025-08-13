@@ -3,7 +3,7 @@
 #' @author Bennet Weiss
 calcProductThickness <- function(){
   x <- readSource("Cao2024", subtype = "product_thickness")
-  x <- x * 1e-6 # convert from mm to m
+  x <- x * 1e-3 # convert from mm to m
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
