@@ -1,3 +1,5 @@
+#readSource("Cao2024", subtype="waste_concrete_size_split")
+
 #' Read data received on 04.08.2025, personal communication.
 #' Data used for Kaufmann et al. (2024), DOI: 10.1088/1748-9326/ad236b
 #' "Society’s material stocks as carbon pool: an economy-wide quantification of global carbon stocks from 1900–2015"
@@ -103,62 +105,53 @@ readCao2024 <- function(subtype) {
     long_names <- c("cement wasted during construction (distribution)")
   } else if (subtype == "clinker_loss_production") {
     long_names <- c("CKD generation rate of clinker (distribution)")
-  # ------------- From here on not used ----------------------------------------------
-  
-  } else {
-    long_names <- c(
-      "CKD generation rate of clinker (distribution)"
-    )
-
-    long_names <- c(
-      "carbonation rate coefficient of cement mortar (km) (distribution)"
-    )
-
-    long_names <- c(
-      "cement wasted during construction (distribution)"
-    )
-
-    long_names <- c(
-      "average CaO content of clinker in cement (fCaO) (distribution)"
-    )
-
-    long_names <- c(
-      "ratio of CO2 element to CaO (Mr)"
-    )
-
+  } else if (subtype == "waste_split") {
     long_names <- c(
       "fate of waste concrete (for new concrete)",
       "fate of waste concrete (for road base, backfills materials and other use)",
       "fate of waste concrete (landfill, dumped and stacking)",
       "fate of waste concrete (asphalt concrete)"
     )
-
+    dim_members <- c("new concrete", "aggregates", "landfill", "asphalt")
+    dim <- "Concrete Waste Type"
+  } else if (subtype == "waste_size_split") {
     long_names <- c(
       "percentage of waste concrete (for new concrete) with particle size <5mm (min)",
       "percentage of waste concrete (for new concrete) with particle size 5-10mm (min)",
       "percentage of waste concrete (for new concrete) with particle size 10-20mm (min)",
-      "percentage of waste concrete (for new concrete) with particle size 20-40mm (min)"
-    )
-
-    long_names <- c(
+      "percentage of waste concrete (for new concrete) with particle size 20-40mm (min)",
       "percentage of waste concrete (for road base, backfills materials and other use) with particle size <1mm (min)",
       "percentage of waste concrete (for road base, backfills materials and other use) with particle size 1-10mm (min)",
       "percentage of waste concrete (for road base, backfills materials and other use) with particle size 10-30mm (min)",
-      "percentage of waste concrete (for road base, backfills materials and other use) with particle size 30-53mm (min)"
-    )
-
-    long_names <- c(
+      "percentage of waste concrete (for road base, backfills materials and other use) with particle size 30-53mm (min)",
       "percentage of waste concrete (landfill, dumped and stacking) with particle size <10mm (min)",
       "percentage of waste concrete (landfill, dumped and stacking) with particle size 10-30mm (min)",
       "percentage of waste concrete (landfill, dumped and stacking) with particle size 30-50mm (min)",
-      "percentage of waste concrete (landfill, dumped and stacking) with particle size >50mm (min)"
-    )
-
-    long_names <-c(
+      "percentage of waste concrete (landfill, dumped and stacking) with particle size >50mm (min)",
       "percentage of waste concrete (asphalt concrete) with particle size <5mm (min)",
       "percentage of waste concrete (asphalt concrete) with particle size 5-10mm (min)",
       "percentage of waste concrete (asphalt concrete) with particle size 10-20mm (min)",
       "percentage of waste concrete (asphalt concrete) with particle size 20-40mm (min)"
+    )
+    waste_types <- c("new concrete", "aggregates", "landfill", "asphalt")
+    particle_sizes <- c("A", "B", "C", "D")
+    dim_members <- list(
+      "Concrete Waste Type" = waste_types,
+      "Particle Size" = particle_sizes
+    )
+    dim <- c("Concrete Waste Type", "Particle Size")
+    normalize <- TRUE
+    groups <- c(rep("new concrete",4), rep("aggregates",4), rep("landfill",4), rep("asphalt",4))
+  # ------------- From here on not used ----------------------------------------------
+
+  } else {
+
+    long_names <- c(
+      "average CaO content of clinker in cement (fCaO) (distribution)"
+    )
+
+    long_names <- c(
+      "ratio of CO2 element to CaO (Mr)" # I can calculate this myself
     )
 
     long_names <-c(
@@ -191,39 +184,71 @@ readCao2024 <- function(subtype) {
 #' @param long_names long label of the first column of a variable.
 #' @param dim_members names of the different elements of a dimension.
 #' @param dim name of the dimension.
-#' @param normalize Bool if normalization step should be performed
+#' @param normalize Bool if normalization step should be performed.
 #' @param tol Tolerance for check of normalization within rounding errors. Only performed if normalize = TRUE.
-#' @param groups optional vector (same length as long_names) giving group IDs
+#' @param groups optional vector (same length as long_names) giving group IDs.
+#' @param warn Bool flag to activate warning if underlying data is not normalized.
 calculate_means <- function(data, long_names, dim_members = NULL, dim = NULL,
-                            normalize = FALSE, tol = 3e-2, fmean = FALSE, groups = NULL) {
-  if (!is.null(dim_members) && length(dim_members) != length(long_names))
-    stop("dim_members must have the same length as long_names")
-  if (!is.null(groups) && length(groups) != length(long_names))
+                            normalize = FALSE, tol = 3e-2, fmean = FALSE, groups = NULL, warn = FALSE) {
+  # Check if we have multiple dimensions
+  multi_dim <- is.list(dim_members) && !is.data.frame(dim_members)
+
+  if (multi_dim) {
+    # Check dimensions match
+    total_combinations <- prod(sapply(dim_members, length))
+    if (length(long_names) != total_combinations) {
+      stop("Number of long_names (", length(long_names), ") must match total combinations of dimensions (",
+           total_combinations, ")")
+    }
+  } else {
+    # Single dimension case
+    if (!is.null(dim_members) && length(dim_members) != length(long_names))
+      stop("dim_members must have the same length as long_names")
+  }
+
+  if (!is.null(groups) && length(groups) != length(long_names)) {
     stop("groups must have same length as long_names")
+  }
 
   # Collect means (assumes calculate_mean(data, name) returns a numeric vector)
-  cols <- lapply(long_names, function(nm) as.numeric(calculate_mean(data, nm, fmean = fmean)))
+  cols <- lapply(long_names, function(nm) as.numeric(calculate_mean_single(data, nm, fmean = fmean)))
   X <- as.data.frame(cols, check.names = FALSE)
-  names(X) <- dim_members
+
+  if (multi_dim) {
+    # For multi-dimensional case, use flattened column names temporarily
+    names(X) <- paste0("col", 1:ncol(X))
+  } else {
+    # Single dimension case
+    names(X) <- dim_members
+  }
 
   # Normalize rows (exclude region)
   if (normalize) {
+    # o
     if (is.null(groups)) {
+      err <- abs(rowSums(X) - 1)
+      if (any(err > tol, na.rm = TRUE) && warn){
+        warning("Before normalizing: some rows deviate from 1 by more than tol.")
+      }
       rs <- rowSums(X) # calculate sum for each row
       X <- sweep(X, 1, rs, "/") # divide each value by the row sum
 
       err <- abs(rowSums(X) - 1)
-      if (any(err > tol, na.rm = TRUE)) warning("Some rows deviate from 1 by more than tol.")
+      if (any(err > tol, na.rm = TRUE)) warning("After normalizing: some rows deviate from 1 by more than tol.")
     } else {
       for (g in unique(groups)) {
         idx <- which(groups == g)
+        err <- abs(rowSums(X[, idx, drop=FALSE]) - 1)
+        if (any(err > tol, na.rm = TRUE) && warn) {
+          warning(sprintf("Before normalizing: Group '%s' some rows deviate from 1 by more than tol.", g))
+        }
         rs <- rowSums(X[, idx, drop=FALSE])
         X[, idx] <- sweep(X[, idx, drop=FALSE], 1, rs, "/")
         err <- abs(rowSums(X[, idx, drop=FALSE]) - 1)
         if (any(err > tol, na.rm = TRUE))
-          warning(sprintf("Group '%s' some rows deviate from 1 by more than tol.", g))
+          warning(sprintf("After normalizing: Group '%s' some rows deviate from 1 by more than tol.", g))
       }
-    }  
+    }
   }
 
   # add region as first column
@@ -231,12 +256,35 @@ calculate_means <- function(data, long_names, dim_members = NULL, dim = NULL,
 
   # Wide -> long
   if (!is.null(dim_members)) {
-    out <- reshape(X,
-                   varying = dim_members, v.names = "value",
-                   timevar = dim, times = dim_members,
-                   idvar = "Region", direction = "long")
-    rownames(out) <- NULL
-    out <- out[, c("Region", dim, "value")]
+    if (multi_dim) {
+      out <- tidyr::pivot_longer(
+        X,
+        cols = starts_with("col"),
+        names_to = "Column",
+        values_to = "value"
+      )
+      n_regions <- length(unique(out$Region))
+      dim_grid <- expand.grid(rev(dim_members), KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
+      dim_grid <- dim_grid[, rev(seq_along(dim_grid))]
+      # Repeat for each region
+      dim_grid <- dim_grid[rep(1:nrow(dim_grid), times = n_regions), ]
+      # Repeat the full grid for each region in order
+      dim_grid <- dim_grid[order(rep(1:n_regions, each = nrow(expand.grid(dim_members)))), ]
+      out[names(dim_members)] <- dim_grid
+
+      # Select only needed columns
+      out <- out[, c("Region", dim, "value")]
+    } else {
+      # Original single dimension case
+      out <- pivot_longer(
+        X,
+        cols = all_of(dim_members),
+        names_to = dim,
+        values_to = "value"
+      )
+      rownames(out) <- NULL
+      out <- out[, c("Region", dim, "value")]
+    }
   } else out <- X
 
   return(out)
@@ -247,7 +295,7 @@ calculate_means <- function(data, long_names, dim_members = NULL, dim = NULL,
 #'
 #' @param data original input from dataframe.
 #' @param start_column_name label of first column of variable.
-calculate_mean <- function(data, start_column_name, fmean = FALSE) {
+calculate_mean_single <- function(data, start_column_name, fmean = FALSE) {
 
   if (!fmean){
     mean_functions <- list(
@@ -269,11 +317,31 @@ calculate_mean <- function(data, start_column_name, fmean = FALSE) {
   )
 
   start_idx <- which(names(data) == start_column_name)
-  distribution <-  data[[1, start_idx]]
+  distribution <- data[[1, start_idx]]
+
+  if (distribution %in% names(mean_functions)) {
+    start_idx <- start_idx + 1
+  } else {
+    if (grepl("min", start_column_name) && !grepl("distribution", distribution)) {
+      # special case where distribution not given in excel
+      distribution <- "Uniform"
+    } else if (!is.na(suppressWarnings(as.numeric(distribution)))) {
+      # there is actually no distribution, but only a single number
+      return(as.numeric(data[[start_idx]]))
+    } else {
+      stop(paste("Distribution ", distribution, " not implemented."))
+    }
+  }
+
   mean_function <- mean_functions[[distribution]]
   n_params <- distribution_parameter_number[[distribution]]
 
-  parameters <- data[(start_idx + 1):(start_idx + n_params)]
+  parameters <- data[(start_idx):(start_idx + n_params - 1)]
+
+  if (grepl("min", start_column_name) && !grepl("distribution", distribution)) {
+    # special case where distribution not given in excel
+    parameters <- parameters[, c(2, 1)]
+  }
 
   return(mean_function(parameters))
 }
