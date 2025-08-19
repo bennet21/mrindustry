@@ -67,6 +67,20 @@ readCao2024 <- function(subtype) {
     long_names <- c("CO2 concentration (βCO2) (distribution)")
   } else if (subtype == "carbonation_rate_factor_coating") {
     long_names <- c("coating and cover (βCC) (distribution)")
+  } else if (subtype == "carbonation_rate_buried") {
+    long_names <-c(
+      "carbonation rate coefficient of buried concrete in strength class i (kli) ≤C15",
+      "carbonation rate coefficient of buried concrete in strength class i (kli) C16-C23",
+      "carbonation rate coefficient of buried concrete in strength class i (kli) C23-C35",
+      "carbonation rate coefficient of buried concrete in strength class i (kli) >C35",
+      # TODO replace this hack: Cement content of mortar assumed to be the same as C15
+      # However, not important as mortar has fully carbonated anyways after in-use
+      "carbonation rate coefficient of buried concrete in strength class i (kli) ≤C15",
+      "carbonation rate coefficient of buried concrete in strength class i (kli) ≤C15",
+      "carbonation rate coefficient of buried concrete in strength class i (kli) ≤C15"
+    )
+    dim_members <- c("C15", "C20", "C30", "C35", "finishing", "masonry", "maintenance")
+    dim <- "Product Application"
   } else if (subtype == "product_thickness") {
     long_names <- c(
       # TODO replace this hack to fill over concrete dim_members
@@ -154,13 +168,6 @@ readCao2024 <- function(subtype) {
   } else {
     long_names <- c(
       "ratio of CO2 element to CaO (Mr)" # I can calculate this myself
-    )
-
-    long_names <-c(
-      "carbonation rate coefficient of buried concrete in strength class i (kli) ≤C15",
-      "carbonation rate coefficient of buried concrete in strength class i (kli) C16-C23",
-      "carbonation rate coefficient of buried concrete in strength class i (kli) C23-C35",
-      "carbonation rate coefficient of buried concrete in strength class i (kli) >C35"
     )
   }
 

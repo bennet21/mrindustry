@@ -1,19 +1,21 @@
 #' Calculate carbonation rate of different strength concrete.
 #'
+#' @param subtype Type of carbonation rate. May be "base", "additives", "co2", "coating", "base_buried"
 #' @author Bennet Weiss
 calcCarbonationRate <- function(subtype = "base"){
 
   full_name <- list(
-    base      = "carbonation_rate",
-    additives = "carbonation_rate_factor_additives",
-    co2       = "carbonation_rate_factor_co2",
-    coating   = "carbonation_rate_factor_coating"
+    base        = "carbonation_rate",
+    additives   = "carbonation_rate_factor_additives",
+    co2         = "carbonation_rate_factor_co2",
+    coating     = "carbonation_rate_factor_coating",
+    base_buried = "carbonation_rate_buried"
   )
 
   x <- readSource("Cao2024", subtype = full_name[[subtype]])
   unit <- "factor"
 
-  if (subtype == "base") {
+  if (subtype %in% c("base", "base_buried")) {
     x <- x * 1e-3 # convert from mm/sqrt(yr) to m/sqrt(yr)
     unit <- "m/sqrt(a)"
   }
