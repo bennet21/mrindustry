@@ -142,14 +142,16 @@ readCao2024 <- function(subtype) {
     dim <- c("Concrete Waste Type", "Particle Size")
     normalize <- TRUE
     groups <- c(rep("new concrete",4), rep("aggregates",4), rep("landfill",4), rep("asphalt",4))
+  } else if (subtype == "CKD_landfill_share") {
+    long_names <- c("percentage of CKD sent to landfill (distribution)")
+  } else if (subtype == "clinker_cao_content") {
+    long_names <- c("average CaO content of clinker in cement (fCaO) (distribution)")
+  } else if (subtype == "CKD_cao_content") {
+    long_names <- c("CaO content in CKD (distribution)")
+
   # ------------- From here on not used ----------------------------------------------
 
   } else {
-
-    long_names <- c(
-      "average CaO content of clinker in cement (fCaO) (distribution)"
-    )
-
     long_names <- c(
       "ratio of CO2 element to CaO (Mr)" # I can calculate this myself
     )
@@ -160,15 +162,6 @@ readCao2024 <- function(subtype) {
       "carbonation rate coefficient of buried concrete in strength class i (kli) C23-C35",
       "carbonation rate coefficient of buried concrete in strength class i (kli) >C35"
     )
-
-    long_names <- c(
-      "percentage of CKD sent to landfill (distribution)"
-    )
-
-    long_names <- c(
-      "CaO content in CKD (distribution)"
-    )
-
   }
 
   x <- calculate_means(data, long_names, dim_members, dim, normalize = normalize,
@@ -301,7 +294,8 @@ calculate_mean_single <- function(data, start_column_name, fmean = FALSE) {
     mean_functions <- list(
       "Weibull" = mean_trunc_weibull,
       "Uniform" = mean_uniform,
-      "Triangular" = mean_triangular
+      "Triangular" = mean_triangular,
+      "Normal" = mean_trunc_norm
     )
   } else {
     mean_functions <- list(
@@ -313,7 +307,8 @@ calculate_mean_single <- function(data, start_column_name, fmean = FALSE) {
   distribution_parameter_number <- c(
     "Weibull" = 4,
     "Uniform" = 2,
-    "Triangular" = 3
+    "Triangular" = 3,
+    "Normal" = 4
   )
 
   start_idx <- which(names(data) == start_column_name)
@@ -417,6 +412,34 @@ mean_triangular <- function(parameters) {
 
   (a + b + mode) / 3
 }
+
+mean_trunc_norm <- function(parameters) {
+  parameters <- as.data.frame(parameters, optional = TRUE)
+  if (!is.data.frame(parameters) || ncol(parameters) != 4L)
+    stop("parameters must be a data.frame/matrix (4 columns: mean, std, min, max) or a length-4 vector/list.")
+
+  mu <- as.numeric(parameters[[1]])   # mean of original distribution
+  sigma <- as.numeric(parameters[[2]])  # std of original distribution
+  a <- as.numeric(parameters[[3]])   # min (lower bound)
+  b <- as.numeric(parameters[[4]])   # max (upper bound)
+
+  bad <- !is.finite(a) | !is.finite(b) | !is.finite(mu) | !is.finite(sigma) |
+    !(b > a) | !(sigma > 0)
+  if (any(bad))
+    stop(sprintf("Invalid truncated normal parameters (need a < b and sigma > 0): %s",
+                 paste(which(bad), collapse = ", ")))
+
+  alpha <- (a - mu) / sigma
+  beta <- (b - mu) / sigma
+
+  # Calculate the truncated normal mean
+  # using the formula: mu + sigma * (pdf(alpha) - pdf(beta)) / (cdf(beta) - cdf(alpha))
+  Z <- pnorm(beta) - pnorm(alpha)
+  truncated_mean <- mu + sigma * (dnorm(alpha) - dnorm(beta)) / Z
+
+  return(truncated_mean)
+}
+
 
 #' Conditional harmonic mean (1 / E[1/X]) for truncated Weibull on [a,b].
 #' Parameters: (scale, shape, min, max). Requires (shape>1 or a>0). Diverges if a=0 & shape<=1.

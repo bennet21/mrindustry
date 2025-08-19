@@ -1,10 +1,8 @@
-#' Calculate what size distribution concrete/mortar waste has.
-#' Size categories defined by particle radius.
+#' Calculate share of CKD that goes to landfill.
 #'
 #' @author Bennet Weiss
-calcWasteSizeSplit <- function(){
-
-  x <- readSource("Cao2024", subtype = "waste_size_split")
+calcCKDLandfillShare <- function(){
+  x <- readSource("Cao2024", subtype = "CKD_landfill_share")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -12,7 +10,7 @@ calcWasteSizeSplit <- function(){
 
   unit <- "ratio"
   description <- paste(
-    "Concrete/mortar waste particle size split.",
+    "Share of CKD that goes to landfill.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)
