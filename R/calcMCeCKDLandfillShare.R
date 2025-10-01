@@ -1,16 +1,16 @@
-#' Calculate share of cao available for carbonation.
+#' Calculate share of CKD that goes to landfill.
 #'
 #' @author Bennet Weiss
-calcCaOCarbonationShare <- function(){
-  x <- readSource("Cao2024", subtype = "cao_carbonation_share")
+calcMCeCKDLandfillShare <- function(){
+  x <- readSource("Cao2024", subtype = "CKD_landfill_share")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
   weight <- toolCountryFill(weight, fill = 1, verbosity = 2)
-  
+
   unit <- "ratio"
   description <- paste(
-    "Share of CaO in End-Use Product available for carbonation.",
+    "Share of CKD that goes to landfill.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)

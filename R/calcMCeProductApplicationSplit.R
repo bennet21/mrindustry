@@ -1,9 +1,8 @@
-#' Calculate where concrete/mortar waste goes.
+#' Calculate strength class distribution of concrete.
 #'
 #' @author Bennet Weiss
-calcWasteSplit <- function(){
-
-  x <- readSource("Cao2024", subtype = "waste_split")
+calcMCeProductApplicationSplit <- function(){
+  x <- readSource("Cao2024", subtype = "product_application_split")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -11,7 +10,7 @@ calcWasteSplit <- function(){
 
   unit <- "ratio"
   description <- paste(
-    "Concrete/mortar waste split.",
+    "Split of product materials by application.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)

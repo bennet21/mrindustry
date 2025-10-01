@@ -71,6 +71,25 @@ fullMFA <- function(rev = 0, dev = "", scenario='SSP2', gdp_per_capita=FALSE, ru
     # Parameters
     calcOutput("MCeBuiltLifespan", file = "use_lifetime_mean.cs4r")
     calcOutput("MCeClinkerRatio", file = "clinker_ratio.cs4r", years=1900:2023)
+    calcOutput("MCeCementLosses", file = "cement_losses.cs4r", subtype = "cement_loss_construction")
+    calcOutput("MCeCementLosses", file = "clinker_losses.cs4r", subtype = "clinker_loss_production")
+    calcOutput("MCeProductApplicationSplit", file = "product_application_split.cs4r")
+    calcOutput("MCeProductCementContent", file = "product_cement_content.cs4r")
+    calcOutput("MCeProductMaterialSplit", file = "product_material_split.cs4r")
+    calcOutput("MCeStockTypeSplit", file = "stock_type_split.cs4r")
+    # Carbonation
+    calcOutput("MCeCaOCarbonationShare", file = "cao_carbonation_share.cs4r")
+    calcOutput("MCeCaOContent", file = "ckd_cao_ratio.cs4r", subtype = "CKD")
+    calcOutput("MCeCaOContent", file = "clinker_cao_ratio.cs4r", subtype = "clinker")
+    calcOutput("MCeCarbonationRate", file = "carbonation_rate_buried.cs4r", subtype = "base_buried")
+    calcOutput("MCeCarbonationRate", file = "carbonation_rate_coating.cs4r", subtype = "coating")
+    calcOutput("MCeCarbonationRate", file = "carbonation_rate_co2.cs4r", subtype = "co2")
+    calcOutput("MCeCarbonationRate", file = "carbonation_rate_additives.cs4r", subtype = "additives")
+    calcOutput("MCeCarbonationRate", file = "carbonation_rate.cs4r")
+    calcOutput("MCeCKDLandfillShare", file = "ckd_landfill_share.cs4r")
+    calcOutput("MCeProductThickness", file = "product_thickness.cs4r")
+    calcOutput("MCeWasteSizeSplit", file = "waste_size_share.cs4r")
+    calcOutput("MCeWasteSplit", file = "waste_type_split.cs4r")
   }
 
 }

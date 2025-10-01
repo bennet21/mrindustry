@@ -2,7 +2,7 @@
 #'
 #' @param subtype Type of carbonation rate. May be "base", "additives", "co2", "coating", "base_buried"
 #' @author Bennet Weiss
-calcCarbonationRate <- function(subtype = "base"){
+calcMCeCarbonationRate <- function(subtype = "base"){
 
   full_name <- list(
     base        = "carbonation_rate",

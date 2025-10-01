@@ -1,10 +1,9 @@
-#' Calculate what size distribution concrete/mortar waste has.
-#' Size categories defined by particle radius.
+#' Calculate where concrete/mortar waste goes.
 #'
 #' @author Bennet Weiss
-calcWasteSizeSplit <- function(){
+calcMCeWasteSplit <- function(){
 
-  x <- readSource("Cao2024", subtype = "waste_size_split")
+  x <- readSource("Cao2024", subtype = "waste_split")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -12,7 +11,7 @@ calcWasteSizeSplit <- function(){
 
   unit <- "ratio"
   description <- paste(
-    "Concrete/mortar waste particle size split.",
+    "Concrete/mortar waste split.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)

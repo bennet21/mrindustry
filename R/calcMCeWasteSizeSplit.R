@@ -1,9 +1,10 @@
-#' Calculate Losses in cement cycle.
+#' Calculate what size distribution concrete/mortar waste has.
+#' Size categories defined by particle radius.
 #'
 #' @author Bennet Weiss
-#' @param subtype Loss type: can be "cement_loss_construction" or "clinker_loss_production"
-calcCementLosses <- function(subtype){
-  x <- readSource("Cao2024", subtype = subtype)
+calcMCeWasteSizeSplit <- function(){
+
+  x <- readSource("Cao2024", subtype = "waste_size_split")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
@@ -11,7 +12,7 @@ calcCementLosses <- function(subtype){
 
   unit <- "ratio"
   description <- paste(
-    "Losses in the cement cycle for subtype ", subtype, ".",
+    "Concrete/mortar waste particle size split.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)

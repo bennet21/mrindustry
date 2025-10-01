@@ -1,17 +1,16 @@
-#' Calculate strength class distribution of concrete.
+#' Calculate end use product share of cement.
 #'
 #' @author Bennet Weiss
-calcProductThickness <- function(){
-  x <- readSource("Cao2024", subtype = "product_thickness")
-  x <- x * 1e-3 # convert from mm to m
+calcMCeProductMaterialSplit <- function(){
+  x <- readSource("Cao2024", subtype = "product_material_split")
 
   # create new magpie object and fill with ones
   weight <- new.magpie(cells_and_regions = NULL)
   weight <- toolCountryFill(weight, fill = 1, verbosity = 2)
 
-  unit <- "m"
+  unit <- "ratio"
   description <- paste(
-    "Thickness of product application.",
+    "Split cement into product materials.",
     "Data from Cao2024."
   )
   output <- list(x = x, weight = weight, unit = unit, description = description)
