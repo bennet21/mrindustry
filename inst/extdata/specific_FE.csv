@@ -85,11 +85,6 @@ SDP_MC,                 ESW,      otherInd,          0.029
 SDP_MC,                 EWN,      otherInd,          0.029
 SDP_MC,                 FRA,      otherInd,          0.029
 SDP_MC,                 UKI,      otherInd,          0.029
-SSP2_ECEMF_modEffInd,   NA,       steel_primary,     0
-SSP2_ECEMF_modEffInd,   NA,       cement,            0
-SSP2_ECEMF_modEffInd,   NA,       steel_secondary,   0
-SSP2_ECEMF_modEffInd,   NA,       chemicals,         0
-SSP2_ECEMF_modEffInd,   NA,       otherInd,          0
 SSP3,                   NA,       cement,            0.01
 SSP3,                   NA,       steel_primary,     0.003
 SSP3,                   NA,       steel_secondary,   0.003
